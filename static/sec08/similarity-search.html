@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>대한민국헌법 유사도 검색</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="/static/common/css/ai-utils.css" rel="stylesheet" />
+  <script src="/static/common/js/ai-utils.js"></script>
+  <script>
+    // ##### 제출 버튼을 클릭했을 때 실행하는 함수 #####
+    async function handleSubmit() {
+      try {
+        // 텍스트 질문을 얻고 대화 패널에 추가하기
+        const query = document.getElementById("query").value;
+        const k = document.getElementById("k").value;
+        
+        if (query === "") return;
+        
+        ai_utils.addUserQuestion(`검색: "${query}" (상위 ${k}개)`, "chatPanel");
+
+        // 응답이 오기까지 스피너 보여주기
+        ai_utils.setSpinner("spinner", true);
+
+        // AJAX 요청하고 응답받기
+        const response = await fetch('/sec08/similarity-search', {
+          method: "post",
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'text/plain'
+          },         
+          body: new URLSearchParams({ query, k })
+        });
+
+        // AI 모델 답변이 들어갈 위치를 대화 패널에 추가
+        const uuid = ai_utils.addAnswerPlaceHolder("chatPanel");
+        
+        // 텍스트 답변 출력하기
+        ai_utils.printAnswerText(response, uuid, "chatPanel");
+      } catch (error) {
+        console.log(error);
+      } finally {
+        // 스피너 숨기기
+        ai_utils.setSpinner("spinner", false);
+      }
+    } 
+  </script>
+</head>
+
+<body>
+  <div class="d-flex flex-column vh-100">
+    <div id="headPanel" class="navbar justify-content-between">
+      <a href="/" class="navbar-brand ps-2">
+        <img src="/static/common/image/langchain_logo.png" width="200" />
+      </a>
+      <div id="spinner" class="spinner-border text-success d-none me-3" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div id="chatPanel" class="flex-grow-1 container-fluid h-100 my-2" style="overflow-y:auto; overflow-x:hidden;">
+      <div class="d-flex justify-content-start border-bottom m-2">
+        <table>
+          <tr>
+            <td><img src="/static/common/image/assistant.png" width="50" /></td>
+            <td>
+              <div>
+                <p><strong>🔍 대한민국헌법 유사도 검색</strong></p>
+                <p>대한민국헌법에서 키워드 또는 질문과 유사한 문서를 검색합니다.</p>
+                <p>검색할 키워드와 검색 결과 개수를 입력하세요.</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="inputPanel" class="bg-secondary-subtle">
+      <div class="input-group p-2">
+        <span class="input-group-text">검색어</span>
+        <input id="query" type="text" class="form-control" value="대통령 임기는 어떻게 됩니까?" placeholder="대통령 임기는 어떻게 됩니까?">
+        <span class="input-group-text">상위</span>
+        <select id="k" class="form-select" style="max-width: 100px;">
+          <option value="3" selected>3개</option>
+          <option value="5">5개</option>
+          <option value="10">10개</option>
+        </select>
+        <span class="input-group-text">
+          <button type="button" class="btn btn-primary" onclick="handleSubmit()">검색</button>
+        </span>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,14 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/static/favicon.png">
-    {# <link rel="icon" type="image/png" href="{{url_for('static', path='favicon.png')}}"> #}
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LangChain Tutorial</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <!-- Bootstrap CSS & JS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- 마크다운을 HTML로 변환하는 라이브러리-->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>  
+  <!-- 공통 CSS & JS -->
+  <link href="/static/common/css/ai-utils.css" rel="stylesheet" />
+  <script src="/static/common/js/ai-utils.js"></script>
+  <style>
+    /* 최소 CSS - Bootstrap으로 불가능한 부분만 */
+    body {
+      background: #f8f9fa;
+      overflow: hidden;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    .navbar-brand,
+    .navbar-brand span {
+      color: white !important;
+    }
+    .card {
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #0d6efd !important;
+    }
+    @media (max-width: 768px) {
+      body { overflow: auto; }
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Welcome to FastAPI Backend</h1>
-    <p>This is a sample FastAPI application</p>
+  <div class="d-flex flex-column vh-100">
+    <!-- Header -->
+    <nav class="navbar shadow-sm">
+      <div class="container-fluid">
+        <a href="/" class="navbar-brand d-flex align-items-center">
+          <img src="/static/common/image/langchain_icon.svg" height="40" alt="LangChain" />
+          <span class="ms-3 fw-bold fs-3">LangChain</span>
+          <span class="ms-3 small d-none d-md-inline">AI 애플리케이션 개발을 위한 실전 가이드</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 d-flex flex-column align-items-center p-3 pt-4 overflow-hidden">
+      <!-- Cards Grid -->
+      <div class="container-fluid" style="max-width: 1600px;">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+          <!-- API Docs Card -->
+          <div class="col">
+            <a href="/docs" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-danger rounded-pill mb-2">API Docs</span>
+                <div class="fs-1 mb-2">📚</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">API 도큐먼트</h5>
+                <p class="card-text text-muted small">API 레퍼런스</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 01 -->
+          <div class="col">
+            <a href="/static/sec01/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 01</span>
+                <div class="fs-1 mb-2">⚡</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">개발 환경 설정</h5>
+                <p class="card-text text-muted small">초기 설정 및 환경 구성</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 02 -->
+          <div class="col">
+            <a href="/static/sec02/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 02</span>
+                <div class="fs-1 mb-2">💬</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">텍스트 채팅</h5>
+                <p class="card-text text-muted small">기본 채팅 모델 사용</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 03 -->
+          <div class="col">
+            <a href="/static/sec03/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 03</span>
+                <div class="fs-1 mb-2">📨</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">메시지 처리</h5>
+                <p class="card-text text-muted small">고급 프롬프트 엔지니어링</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 04 -->
+          <div class="col">
+            <a href="/static/sec04/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 04</span>
+                <div class="fs-1 mb-2">🏗️</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">구조화된 출력</h5>
+                <p class="card-text text-muted small">Pydantic 모델 활용</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 05 -->
+          <div class="col">
+            <a href="/static/sec05/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 05</span>
+                <div class="fs-1 mb-2">⚙️</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">Agent 생성</h5>
+                <p class="card-text text-muted small">자율 AI Agent 구축</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 06 -->
+          <div class="col">
+            <a href="/static/sec06/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 06</span>
+                <div class="fs-1 mb-2">📖</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">대화 히스토리</h5>
+                <p class="card-text text-muted small">컨텍스트 관리</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 07 -->
+          <div class="col">
+            <a href="/static/sec07/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 07</span>
+                <div class="fs-1 mb-2">🔧</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">도구 호출</h5>
+                <p class="card-text text-muted small">외부 도구 통합</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 08 -->
+          <div class="col">
+            <a href="/static/sec08/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 08</span>
+                <div class="fs-1 mb-2">📄</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">RAG 시스템</h5>
+                <p class="card-text text-muted small">문서 검색 기반 응답</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Section 09 -->
+          <div class="col">
+            <a href="/static/sec09/index.html" class="card h-100 text-decoration-none shadow-sm border-2 border-transparent">
+              <div class="card-body text-center p-3">
+                <span class="badge bg-primary rounded-pill mb-2">Section 09</span>
+                <div class="fs-1 mb-2">👥</div>
+                <h5 class="card-title fs-6 fw-semibold mb-2">멀티 Agent</h5>
+                <p class="card-text text-muted small">Agent 협업 시스템</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
+
