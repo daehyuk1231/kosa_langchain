@@ -164,3 +164,84 @@ class StepBackService:
     
 # 의존성 주입을 위한 타입 힌트 정의
 StepBackServiceDep = Annotated[StepBackService, Depends(StepBackService)]
+
+##################################
+# CoTService 클래스 정의
+##################################
+class CoTService:
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(f"{__name__}.CoTService")
+        
+        self.chat_model = init_chat_model(
+            "gpt-4o-mini",
+            model_provider="openai",
+            temperature=0.7,
+            streaming=True
+        )
+        
+    async def chat(self, question: str) -> AsyncGenerator[str, None]:
+        # 사용자 메시지 생성
+        user_text = f"""
+            {question}
+            한 걸음씩 생각해 봅시다.
+
+            [예시]
+            질문: 제 동생이 2살일 때, 저는 그의 나이의 두 배였어요.
+            지금 저는 40살인데, 제 동생은 몇 살일까요? 한 걸음씩 생각해 봅시다.
+
+            답변: 제 동생이 2살일 때, 저는 2 * 2 = 4살이었어요.
+            그때부터 2년 차이가 나며, 제가 더 나이가 많습니다.
+            지금 저는 40살이니, 제 동생은 40 - 2 = 38살이에요. 정답은 38살입니다.
+        """
+        messages = [HumanMessage(user_text)]
+        # 비동기 스트리밍 응답을 위한 요청
+        iterator = self.chat_model.astream(messages)
+        async for ai_message_chunk in iterator:
+            if ai_message_chunk:
+                yield str(ai_message_chunk.content)
+        
+# 의존성 주입을 위한 타입 힌트 정의
+CoTServiceDep = Annotated[CoTService, Depends(CoTService)]
+
+##################################
+# CoTService 클래스 정의
+##################################
+class SelfConsistencyService:
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(f"{__name__}.SelfConsistencyService")
+        
+        self.chat_model = init_chat_model(
+            "gpt-4o-mini",
+            model_provider="openai",
+            temperature=0.0
+        )
+        
+    async def chat(self, content: str) -> str:
+        user_text = f"""
+            다음 내용을 IMPORTANT, NOT_IMPORTANT 둘 중 하나로 분류해 주세요.
+            레이블만 반환하세요.
+
+            내용: {content}
+        """
+        messages = [HumanMessage(user_text)]
+        
+        # 카운팅 변수
+        important_count = 0
+        not_important_count = 0
+        
+        # 5번 반복해서 결과 취합
+        for i in range(5):
+            response = await self.chat_model.ainvoke(messages)
+            answer = str(response.content).strip().upper()
+            self.logger.info(f"answer: {answer}")
+            if "NOT_IMPORTANT" in answer:
+                not_important_count += 1
+            else:
+                important_count += 1
+                
+        # 최종 선택
+        result = "중요함" if important_count > not_important_count else "중요하지 않음"
+        return result
+    
+# 의존성 별칭 타입 정의
+SelfConsistencyServiceDep = Annotated[SelfConsistencyService, Depends(SelfConsistencyService)]

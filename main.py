@@ -134,7 +134,7 @@ async def home(request: Request):
 from api.sec01_dev_environment import controller as sec01_controller
 from api.sec02_text_chat import controller as sec02_controller
 from api.sec03_messages import controller as sec03_controller
-# from api.sec04_structured_output import controller as sec04_controller
+from api.sec04_structured_output import controller as sec04_controller
 # from api.sec05_create_agent import controller as sec05_controller
 # from api.sec06_chat_history import controller as sec06_controller
 # from api.sec07_tool_calling import controller as sec07_controller
@@ -145,7 +145,7 @@ from api.sec03_messages import controller as sec03_controller
 app.include_router(sec01_controller.router)
 app.include_router(sec02_controller.router)
 app.include_router(sec03_controller.router)
-# app.include_router(sec04_controller.router)
+app.include_router(sec04_controller.router)
 # app.include_router(sec05_controller.router)
 # app.include_router(sec06_controller.router)
 # app.include_router(sec07_controller.router)

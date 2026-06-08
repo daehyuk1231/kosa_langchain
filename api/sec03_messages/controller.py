@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 from fastapi import APIRouter, Form
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
-from api.sec03_messages.service import FewShotServiceDep, RoleServiceDep, StepBackServiceDep
+from api.sec03_messages.service import CoTServiceDep, FewShotServiceDep, RoleServiceDep, SelfConsistencyServiceDep, StepBackServiceDep
 import json
 
 # 로거 생성
@@ -46,4 +46,23 @@ async def step_back_prompt(
     service: StepBackServiceDep
 ):
     response = await service.chat(question)
+    return response
+# -------------------------------------------------------------------------
+@router.post("/chain-of-thought", response_class=StreamingResponse)
+async def chain_of_thought(
+    question: Annotated[str, Form()],
+    service: CoTServiceDep
+):
+    response = StreamingResponse(
+        service.chat(question),
+        media_type="application/x-ndjson"
+    )
+    return response
+# -------------------------------------------------------------------------
+@router.post("/self-consistency", response_class=PlainTextResponse)
+async def self_consistency(
+    content: Annotated[str, Form()],
+    service: SelfConsistencyServiceDep
+):
+    response = await service.chat(content)
     return response
