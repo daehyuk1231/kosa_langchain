@@ -4,6 +4,7 @@ from fastapi import Depends
 from langchain.chat_models import init_chat_model
 from langchain.agents import create_agent
 
+from api.common.utils import LoggingCallbackHandler
 from api.sec04_structured_output.model import Movie
 
 class StructuredOutputAgent:
@@ -21,7 +22,8 @@ class StructuredOutputAgent:
     # 에이전트 실행 메소드
     async def run(self, content:str) -> Movie:
         result = await self.agent.ainvoke(
-            {"messages": [{"role":"user", "content":content}]}
+            {"messages": [{"role":"user", "content":content}]},
+            config={"callbacks":[LoggingCallbackHandler()]}
         )
         
         # result = {
