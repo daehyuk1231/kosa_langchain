@@ -2,6 +2,7 @@ import logging
 from typing import Annotated
 from fastapi import Depends
 from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 
 class ChatAgent:
@@ -9,8 +10,16 @@ class ChatAgent:
     def __init__(self, model: str = "openai:gpt-4o-mini") -> None:
         # 로거 생성
         self.logger = logging.getLogger(f"{__name__}.ChatAgent")
-        # Agent 생성
-        self.agent = create_agent(model)
+        
+        # Agent 생성 방법1
+        # self.agent = create_agent(model)
+        
+        # Agent 생성 방법2
+        chat_model = init_chat_model(
+            model,
+            temperature=1.0
+        )
+        self.agent = create_agent(model=chat_model)
 
     # 에이전트 실행 메소드
     async def run(self, question: str) -> str:
