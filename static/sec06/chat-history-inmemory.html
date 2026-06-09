@@ -30,12 +30,11 @@
 
     // 새 대화 ID 생성
     function generateNewConversationId() {
-      currentConversationId = 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      currentConversationId = 'conv_' + Date.now();
       document.getElementById("conversationId").value = currentConversationId;
       localStorage.setItem('conversation_id', currentConversationId);
       document.getElementById("chatPanel").innerHTML = '';
     }
-
     // 대화 ID 변경
     function changeConversationId() {
       const conversationInput = document.getElementById("conversationId");
@@ -65,9 +64,9 @@
         if (data.messages && data.messages.length > 0) {
           document.getElementById("chatPanel").innerHTML = '';
           data.messages.forEach(msg => {
-            if (msg.type === 'human') {
+            if (msg.role === 'human') {
               ai_utils.addUserQuestion(msg.content, "chatPanel");
-            } else if (msg.type === 'ai') {
+            } else if (msg.role === 'ai') {
               const uuid = ai_utils.addAnswerPlaceHolder("chatPanel");
               document.getElementById(uuid).innerHTML = marked.parse(msg.content);
             }
