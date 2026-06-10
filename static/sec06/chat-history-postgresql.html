@@ -61,13 +61,15 @@
       try {
         const response = await fetch(`/sec06/get-history-postgresql?conversation_id=${currentConversationId}`);
         const data = await response.json();
-        
+        // data.messages의 값
+        // [{'role': 'human', 'content': '너의 이름을 자비스로하자'}, 
+        // {'role': 'ai', 'content': '좋아요! 이제부터 저는 "자비스"로 불러주세요'}]
         if (data.messages && data.messages.length > 0) {
           document.getElementById("chatPanel").innerHTML = '';
           data.messages.forEach(msg => {
-            if (msg.type === 'human') {
+            if (msg.role === 'human') {
               ai_utils.addUserQuestion(msg.content, "chatPanel");
-            } else if (msg.type === 'ai') {
+            } else if (msg.role === 'ai') {
               const uuid = ai_utils.addAnswerPlaceHolder("chatPanel");
               document.getElementById(uuid).innerHTML = marked.parse(msg.content);
             }

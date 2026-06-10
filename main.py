@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     yield
     logging.getLogger(__name__).info("애플리케이션 종료")
     # psycopg_pool 닫기
-    await psycopg_pool.close()  # 앱 종료 시 풀 닫기
+    await psycopg_pool.close()  # 앱 종료 시 풀 닫기(커넥션 누수 방지)
     # SQLAlchemy 엔진 닫기
     await engine.dispose()
 
