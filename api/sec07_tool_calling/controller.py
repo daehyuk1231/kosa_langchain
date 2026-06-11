@@ -1,5 +1,9 @@
+import json
 import logging
 from typing import Annotated
+from api.sec07_tool_calling.tool_context import HeatingSystemAgentDep
+from api.sec07_tool_calling.tool_return_direct import RecommendMovieAgentDep
+from api.sec07_tool_calling.tool_web_search import InternetSearchAgentDep
 from fastapi import APIRouter, Form, UploadFile
 from fastapi.responses import PlainTextResponse
 
@@ -41,6 +45,32 @@ async def tool_hardware_control(
 async def tool_file_system(
     question: Annotated[str, Form()],
     agent: FileSystemAgentDep
+):
+    response = await agent.run(question)
+    return response
+#-----------------------------------------------------------
+@router.post("/tool-web-search", response_class=PlainTextResponse)
+async def tool_web_search(
+    question: Annotated[str, Form()],
+    agent: InternetSearchAgentDep
+):
+    response = await agent.run(question)
+    return response
+#---------------------------------------------------------------------
+@router.post("/tool-return-direct")
+async def tool_return_direct(
+    question: Annotated[str, Form()],
+    agent: RecommendMovieAgentDep
+):
+    response = await agent.run(question)
+    logger.info(f"response 타입: {type(response)}, 값: {response}") # str 반환
+    # data = json.loads(response)
+    return response
+#---------------------------------------------------------------------
+@router.post("/tool-context", response_class=PlainTextResponse)
+async def tool_context(
+    question: Annotated[str, Form()],
+    agent: HeatingSystemAgentDep
 ):
     response = await agent.run(question)
     return response
