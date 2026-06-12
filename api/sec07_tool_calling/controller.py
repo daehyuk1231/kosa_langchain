@@ -3,6 +3,7 @@ import logging
 from typing import Annotated
 from api.sec07_tool_calling.tool_context import HeatingSystemAgentDep
 from api.sec07_tool_calling.tool_return_direct import RecommendMovieAgentDep
+from api.sec07_tool_calling.tool_state import StateAgentDep
 from api.sec07_tool_calling.tool_web_search import InternetSearchAgentDep
 from fastapi import APIRouter, Form, UploadFile
 from fastapi.responses import PlainTextResponse
@@ -73,4 +74,13 @@ async def tool_context(
     agent: HeatingSystemAgentDep
 ):
     response = await agent.run(question)
+    return response
+#---------------------------------------------------------------------
+@router.post("/tool-state", response_class=PlainTextResponse)
+async def tool_state(
+    question: Annotated[str, Form()],
+    user_id: Annotated[str, Form()],
+    agent: StateAgentDep
+):
+    response = await agent.run(question, user_id)
     return response
