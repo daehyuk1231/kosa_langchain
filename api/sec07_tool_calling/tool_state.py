@@ -7,6 +7,7 @@ from langchain.tools import tool
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 from langchain_core.messages import ToolMessage
+from langchain.chat_models import init_chat_model
 
 # 로거 생성
 logger = logging.getLogger(__name__)
@@ -74,8 +75,14 @@ def check_permission(runtime: ToolRuntime) -> list[str]:
 class StateAgent:
     def __init__(self, model:str="openai:gpt-4o-mini") -> None:
         self.logger = logging.getLogger(f"{__name__}.StateAgent")
+        self.chat_model = init_chat_model(
+            model,
+            # 기본적으로 LLM은 동시에 여러 도구를 호출할 수 있음(병렬 실행)
+            # 도구에서 상태를 전달할 경우에는 순차적 실행 필요
+            model_kwargs={"parallel_tool_calls": False}
+        )
         self.agent = create_agent(
-            model=model,
+            model=self.chat_model,
             tools=[check_role, check_permission],
             state_schema=CustomState, # type: ignore
             system_prompt="""
