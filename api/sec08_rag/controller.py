@@ -5,6 +5,8 @@ from fastapi.responses import PlainTextResponse
 from langchain_core.document_loaders import Blob
 from langchain_community.document_loaders.parsers.pdf import PyPDFParser
 
+from api.sec08_rag.agent_rag import RAGAgentDep
+from api.sec08_rag.agent_rag2 import RAGAgent2Dep
 from api.sec08_rag.service import EmbeddingServiceDep
 
 # 로거 생성
@@ -34,7 +36,10 @@ async def pdf_embedding(
     documents = list(parser.lazy_parse(blob))
     
     # 메타데이터 추가
-    documents = service.add_metadata(documents, title=title, author=author)
+    documents = service.add_metadata(documents, 
+                                     title=title, 
+                                     author=author,
+                                     source=attach.filename) # type:ignore
     
     # 분할하기
     chunk_documents = service.split_documents(documents)
@@ -70,3 +75,19 @@ async def similarity_search(
         k=k
     )
     return result
+
+# -----------------------------------------------------------
+@router.post("/agent-rag", response_class=PlainTextResponse)
+async def agent_rag(
+    question:Annotated[str, Form()], 
+    agent: RAGAgentDep):
+    response = await agent.run(question)
+    return response
+
+# -----------------------------------------------------------
+@router.post("/agent-rag2", response_class=PlainTextResponse)
+async def agent_rag2(
+    question:Annotated[str, Form()], 
+    agent: RAGAgent2Dep):
+    response = await agent.run(question)
+    return response
