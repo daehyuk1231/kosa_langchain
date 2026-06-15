@@ -1,6 +1,8 @@
 import asyncio
 import logging
 from pathlib import Path
+from typing import Annotated
+from fastapi import Depends
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_postgres import PGVector
@@ -53,7 +55,7 @@ class EmbeddingService:
         from api.common.sqlalchemy_conf import engine
         
         # PGVector 객체 생성(DB 연결을 이용해서 벡터를 저장하고 유사도 검색을 수행하는 역할)
-        vectorestore = PGVector(
+        vectorstore = PGVector(
             embeddings=init_embeddings(model="openai:text-embedding-3-large"),
             collection_name=collection_name,
             connection=engine,
@@ -61,11 +63,36 @@ class EmbeddingService:
         )
         
         # 벡터 저장소에 벡터를 저장하기
-        await vectorestore.aadd_documents(chunk_documents)
+        await vectorstore.aadd_documents(chunk_documents)
         print("임베딩 저장 완료")
         
+    # 유사도 검색하기
+    async def similarity_search(self, collection_name: str, query: str, k: int=3) -> str:
+        from api.common.sqlalchemy_conf import engine
+        
+        # PGVector 객체 생성(DB 연결을 이용해서 벡터를 저장하고 유사도 검색을 수행하는 역할)
+        vectorstore = PGVector(
+            embeddings=init_embeddings(model="openai:text-embedding-3-large"),
+            collection_name=collection_name,
+            connection=engine,
+            async_mode=True
+        )
+        
+        # 유사도 검색
+        # results: List[Tuple[도큐먼트(Document), 거리(float)]] = 
+        # [(Document(page_content="...", metadata={"source": "..."}, ...), 0.95), ...]
+        # 거리는 0~2 사이의 거리값으로, 0에 가까울수록 유사도가 높음
+        results = await vectorstore.asimilarity_search_with_score(query, k)
+
+        if not results:
+            return f"관련된 문서를 찾을 수 없습니다."
+        
+        return "\n".join([f"거리: {distance}, 내용: {doc.page_content[:30]}" for doc, distance in results])
     
-if __name__ == "__main__":
+# 의존성 주입을 위한 타입 힌트 정의
+EmbeddingServiceDep = Annotated[EmbeddingService, Depends(EmbeddingService)]
+    
+def test_embedding():
     import sys
     import selectors
     
@@ -98,4 +125,31 @@ if __name__ == "__main__":
         # - psycopg 비동기 드라이버가 이를 지원하지 않아 오류가 발생
         # - loop_factory로 SelectorEventLoop를 지정해서 호환성 문제를 해결.
         loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector())
-    )        
+    )
+    
+def test_similarity_search():
+    import sys
+    import selectors
+    
+    # C:\kosa-course\projects\langchain\api\sec08_rag\service.py
+    sys.path.append(str(Path(__file__).parents[2]))
+    
+    service = EmbeddingService()
+    
+    result = asyncio.run(
+        service.similarity_search(
+            collection_name="헌법",
+            query="대통령의 임기는 몇 년인가요?",
+            k=3
+        ),
+        # Windows는 기본적으로 ProactorEventLoop를 사용
+        # - psycopg 비동기 드라이버가 이를 지원하지 않아 오류가 발생
+        # - loop_factory로 SelectorEventLoop를 지정해서 호환성 문제를 해결.
+        loop_factory=lambda: asyncio.SelectorEventLoop(selectors.SelectSelector())
+    )
+    
+    print(f"유사도 검색 결과: \n{result}")
+    
+if __name__ == "__main__":
+    # test_embedding()
+    test_similarity_search()
