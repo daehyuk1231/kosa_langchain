@@ -139,7 +139,7 @@ from api.sec05_create_agent import controller as sec05_controller
 from api.sec06_chat_history import controller as sec06_controller
 from api.sec07_tool_calling import controller as sec07_controller
 from api.sec08_rag import controller as sec08_controller
-# from api.sec09_multi_agent import controller as sec09_controller
+from api.sec09_multi_agent import controller as sec09_controller
 
 # 라우터 등록: FastAPI 애플리케이션에 라우터 추가
 app.include_router(sec01_controller.router)
@@ -150,7 +150,7 @@ app.include_router(sec05_controller.router)
 app.include_router(sec06_controller.router)
 app.include_router(sec07_controller.router)
 app.include_router(sec08_controller.router)
-# app.include_router(sec09_controller.router)
+app.include_router(sec09_controller.router)
 
 # ============================================
 # 전역 예외 처리기 등록

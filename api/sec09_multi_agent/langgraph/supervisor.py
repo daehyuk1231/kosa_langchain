@@ -1,7 +1,10 @@
 import logging
+from typing import Annotated
 
+from fastapi import Depends
 from langgraph.graph import END, START, StateGraph
 
+from api.sec09_multi_agent.langgraph.nodes.analysis_node import analysis_node
 from api.sec09_multi_agent.langgraph.state import ShareState
 
 
@@ -16,8 +19,14 @@ class CustomerSupportSupervisor:
     def build_workflow(self):
         # 그래프 생성
         graph = StateGraph(ShareState)
+        
+        # 그래프에 노드 추가
+        graph.add_node("analysis", analysis_node)
+        
         # 그래프에 엣지 추가
-        graph.add_edge(START, END)
+        graph.add_edge(START, "analysis")
+        graph.add_edge("analysis", END)
+        
         # 그래프 컴파일
         self.work_flow = graph.compile()
         
@@ -39,3 +48,6 @@ class CustomerSupportSupervisor:
     # 그래프 시각화 메소드 (디버깅용)
     def get_graph_image(self):
         return self.work_flow.get_graph().draw_mermaid_png()
+    
+# 의존성 주입을 위한 타입 힌트 정의
+CustomerSupportSupervisorDep = Annotated[CustomerSupportSupervisor, Depends(CustomerSupportSupervisor)]
