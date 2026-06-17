@@ -4,7 +4,16 @@ from typing import Annotated
 from fastapi import Depends
 from langgraph.graph import END, START, StateGraph
 
+from api.sec09_multi_agent.langgraph.nodes.account_node import account_node
 from api.sec09_multi_agent.langgraph.nodes.analysis_node import analysis_node
+from api.sec09_multi_agent.langgraph.nodes.gather_node import gather_node
+from api.sec09_multi_agent.langgraph.nodes.general_node import general_node
+from api.sec09_multi_agent.langgraph.nodes.knowledge_node import knowledge_node
+from api.sec09_multi_agent.langgraph.nodes.order_node import order_node
+from api.sec09_multi_agent.langgraph.nodes.refund_node import refund_node
+from api.sec09_multi_agent.langgraph.nodes.route_node_fun import route_node_fun
+from api.sec09_multi_agent.langgraph.nodes.tech_support_node import tech_support_node
+from api.sec09_multi_agent.langgraph.nodes.user_info_node import user_info_node
 from api.sec09_multi_agent.langgraph.state import ShareState
 
 
@@ -22,10 +31,43 @@ class CustomerSupportSupervisor:
         
         # 그래프에 노드 추가
         graph.add_node("analysis", analysis_node)
+        graph.add_node("user_info", user_info_node)
+        graph.add_node("knowledge", knowledge_node)
+        graph.add_node("gather", gather_node)
+        graph.add_node("tech_support", tech_support_node)
+        graph.add_node("order", order_node)
+        graph.add_node("refund", refund_node)
+        graph.add_node("account", account_node)
+        graph.add_node("general", general_node)
         
-        # 그래프에 엣지 추가
+        # START 노드에서 분석 노드로 연결
         graph.add_edge(START, "analysis")
-        graph.add_edge("analysis", END)
+        # 병렬 처리 노드 연결
+        graph.add_edge("analysis", "user_info")
+        graph.add_edge("analysis", "knowledge")
+        # 병렬 취합 노드 연결
+        graph.add_edge("user_info", "gather")
+        graph.add_edge("knowledge", "gather")
+        # 분기하기
+        graph.add_conditional_edges(
+            "gather",
+            # 취합된 정보를 가지고 어디로 분기할지 반환하는 함수
+            route_node_fun,
+            # { "리턴값": "다음노드" }
+            {
+                "tech_support":"tech_support",
+                "order":"order",
+                "refund":"refund",
+                "account":"account",
+                "general":"general"
+            }
+        )
+        # END 노드로 연결
+        graph.add_edge("tech_support", END)
+        graph.add_edge("order", END)
+        graph.add_edge("refund", END)
+        graph.add_edge("account", END)
+        graph.add_edge("general", END)
         
         # 그래프 컴파일
         self.work_flow = graph.compile()
